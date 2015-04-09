@@ -9,3 +9,4 @@
 //= require peek
 //= require peek/views/performance_bar
 //= require peek/views/active_record
+//= require peek/views/rblineprof

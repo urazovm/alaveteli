@@ -56,6 +56,7 @@ gem 'peek-pg'
 gem 'peek-gc'
 gem 'peek-performance_bar'
 gem 'peek-active_record'
+gem 'peek-rblineprof'
 
 group :assets do
   gem 'bootstrap-sass', '~> 2.3.1.2'
