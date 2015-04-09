@@ -50,6 +50,7 @@
         <%= render :partial => 'general/before_head_end' %>
     </head>
     <body class="<%= 'front' if params[:action] == 'frontpage' %>">
+      <%= render 'peek/bar' %>
     <% if AlaveteliConfiguration::force_registration_on_new_request && !@user %>
     <%= javascript_include_tag 'fancybox.js' %>
     <script type="text/javascript">

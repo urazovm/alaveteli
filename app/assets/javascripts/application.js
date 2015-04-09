@@ -6,3 +6,6 @@
 //= require jquery.cookie
 //= require general
 //= require ba-throttle-debounce
+//= require peek
+//= require peek/views/performance_bar
+//= require peek/views/active_record

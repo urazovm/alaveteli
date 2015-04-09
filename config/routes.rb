@@ -26,6 +26,8 @@ Alaveteli::Application.routes.draw do
     match '/version.:format' => 'general#version', :as => :version
     #####
 
+    mount Peek::Railtie => '/peek'
+
     ##### Request controller
     match '/list/recent' => 'request#list', :as => :request_list_recent, :view => 'recent'
     match '/list/all' => 'request#list', :as => :request_list_all, :view => 'all'

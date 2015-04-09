@@ -50,6 +50,13 @@ gem 'routing-filter', '~> 0.3.1'
 gem 'unicode', '~> 0.4.4'
 gem 'unidecoder', '~> 1.1.2'
 
+gem 'peek'
+gem 'peek-git'
+gem 'peek-pg'
+gem 'peek-gc'
+gem 'peek-performance_bar'
+gem 'peek-active_record'
+
 group :assets do
   gem 'bootstrap-sass', '~> 2.3.1.2'
   gem 'sass-rails', '~> 3.2.3'
