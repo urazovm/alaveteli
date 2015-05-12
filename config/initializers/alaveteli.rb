@@ -63,3 +63,7 @@ if Rails.env == 'test' and ActiveRecord::Base.configurations['test']['constraint
   require 'no_constraint_disabling'
 end
 
+unless RUBY_VERSION.to_f >= 1.9
+	ActiveSupport::Deprecation.warn "[DEPRECATION] You are using Ruby 1.8. This will not be supported " \
+									"as of Alaveteli release 0.23. Please upgrade your ruby version."
+end
