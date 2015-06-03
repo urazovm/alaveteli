@@ -178,17 +178,6 @@ class PublicBody < ActiveRecord::Base
                        uniq
     end
 
-    # Set the first letter on a public body or translation
-    def self.set_first_letter(instance)
-        unless instance.name.nil? or instance.name.empty?
-            # we use a regex to ensure it works with utf-8/multi-byte
-            first_letter = Unicode.upcase instance.name.scan(/^./mu)[0]
-            if first_letter != instance.first_letter
-                instance.first_letter = first_letter
-            end
-        end
-    end
-
     def set_default_publication_scheme
       # Make sure publication_scheme gets the correct default value.
       # (This would work automatically, were publication_scheme not a translated attribute)
@@ -220,11 +209,6 @@ class PublicBody < ActiveRecord::Base
         return unless old.size == 1
         # does acts_as_versioned provide a method that returns the current version?
         return PublicBody.find(old.first)
-    end
-
-    # Set the first letter, which is used for faster queries
-    def set_first_letter
-        PublicBody.set_first_letter(self)
     end
 
     # If tagged "not_apply", then FOI/EIR no longer applies to authority at all
@@ -726,6 +710,33 @@ class PublicBody < ActiveRecord::Base
             end
         end
         return bodies
+    end
+
+    # Set the first letter, which is used for faster queries
+    def set_first_letter
+        warn %q([DEPRECATION] PublicBody#set_first_letter will become a private
+        method in 0.23).squish
+        unless name.nil? or name.empty?
+            # we use a regex to ensure it works with utf-8/multi-byte
+            new_first_letter = Unicode.upcase name.scan(/^./mu)[0]
+            if new_first_letter != first_letter
+                self.first_letter = new_first_letter
+            end
+        end
+    end
+
+    # Set the first letter on a public body or translation
+    def self.set_first_letter(instance)
+        warn %q([DEPRECATION] PublicBody.set_first_letter will be removed
+        in 0.23).squish
+
+        unless instance.name.nil? or instance.name.empty?
+            # we use a regex to ensure it works with utf-8/multi-byte
+            first_letter = Unicode.upcase instance.name.scan(/^./mu)[0]
+            if first_letter != instance.first_letter
+                instance.first_letter = first_letter
+            end
+        end
     end
 
     def calculate_cached_fields(t)
