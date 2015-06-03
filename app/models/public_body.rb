@@ -178,12 +178,6 @@ class PublicBody < ActiveRecord::Base
                        uniq
     end
 
-    def set_default_publication_scheme
-      # Make sure publication_scheme gets the correct default value.
-      # (This would work automatically, were publication_scheme not a translated attribute)
-      self.publication_scheme = "" if self.publication_scheme.nil?
-    end
-
     def set_api_key
       self.api_key = SecureRandom.base64(33) if self.api_key.nil?
     end
@@ -723,6 +717,16 @@ class PublicBody < ActiveRecord::Base
                 self.first_letter = new_first_letter
             end
         end
+    end
+
+    def set_default_publication_scheme
+      warn %q([DEPRECATION] PublicBody#set_default_publication_scheme will
+      become a private method in 0.23).squish
+
+      # Make sure publication_scheme gets the correct default value.
+      # (This would work automatically, were publication_scheme not a
+      # translated attribute)
+      self.publication_scheme = "" if publication_scheme.nil?
     end
 
     # Set the first letter on a public body or translation
