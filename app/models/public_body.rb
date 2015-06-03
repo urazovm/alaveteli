@@ -68,7 +68,7 @@ class PublicBody < ActiveRecord::Base
 
     validate :request_email_if_requestable
 
-    before_save :set_api_key
+    before_save :set_api_key!, :unless => :api_key
     before_save :set_default_publication_scheme
     before_save :set_first_letter
     after_save :purge_in_cache
@@ -179,7 +179,11 @@ class PublicBody < ActiveRecord::Base
     end
 
     def set_api_key
-      self.api_key = SecureRandom.base64(33) if self.api_key.nil?
+        set_api_key! if api_key.nil?
+    end
+
+    def set_api_key!
+        self.api_key = SecureRandom.base64(33)
     end
 
     # like find_by_url_name but also search historic url_name if none found
