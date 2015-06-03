@@ -259,19 +259,6 @@ class PublicBody < ActiveRecord::Base
         "authority"
     end
 
-    # if the URL name has changed, then all requested_from: queries
-    # will break unless we update index for every event for every
-    # request linked to it
-    def reindex_requested_from
-        if changes.include?('url_name')
-            info_requests.each do |info_request|
-                info_request.info_request_events.each do |info_request_event|
-                    info_request_event.xapian_mark_needs_index
-                end
-            end
-        end
-    end
-
     # When name or short name is changed, also change the url name
     def short_name=(short_name)
         globalize.write(Globalize.locale, :short_name, short_name)
@@ -739,6 +726,22 @@ class PublicBody < ActiveRecord::Base
       # (This would work automatically, were publication_scheme not a
       # translated attribute)
       self.publication_scheme = "" if publication_scheme.nil?
+    end
+
+    # if the URL name has changed, then all requested_from: queries
+    # will break unless we update index for every event for every
+    # request linked to it
+    def reindex_requested_from
+        warn %q([DEPRECATION] PublicBody#reindex_requested_from will become a
+        private method in 0.23).squish
+
+        if changes.include?('url_name')
+            info_requests.each do |info_request|
+                info_request.info_request_events.each do |info_request_event|
+                    info_request_event.xapian_mark_needs_index
+                end
+            end
+        end
     end
 
     # Methods to remove
