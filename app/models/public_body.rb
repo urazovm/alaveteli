@@ -291,6 +291,8 @@ class PublicBody < ActiveRecord::Base
         update_url_name
     end
 
+    # TODO: Privatise PublicBody#update_url_name. Only used internally except
+    # for AddUrlName migration
     def update_url_name
         self.url_name = MySociety::Format.simplify_url_part(short_or_long_name, 'body')
     end
@@ -307,6 +309,9 @@ class PublicBody < ActiveRecord::Base
 
     # Guess home page from the request email, or use explicit override, or nil
     # if not known.
+    #
+    # TODO: PublicBody#calculated_home_page would be a good candidate to cache
+    # in an instance variable
     def calculated_home_page
         if home_page && !home_page.empty?
             home_page[URI::regexp(%w(http https))] ? home_page : "http://#{home_page}"
@@ -542,6 +547,8 @@ class PublicBody < ActiveRecord::Base
 
     # Return the domain part of an email address, canonicalised and with common
     # extra UK Government server name parts removed.
+    #
+    # TODO: Extract to library class
     def self.extract_domain_from_email(email)
         email =~ /@(.*)/
         if $1.nil?
@@ -559,6 +566,7 @@ class PublicBody < ActiveRecord::Base
         return ret
     end
 
+    # TODO: Could this be defined as `sorted_versions.reverse`?
     def reverse_sorted_versions
         versions.sort { |a,b| b.version <=> a.version }
     end
@@ -571,13 +579,16 @@ class PublicBody < ActiveRecord::Base
         !notes.nil? && notes != ""
     end
 
+    # TODO: Deprecate this method. Its only used in a couple of views so easy to
+    # update to just call PublicBody#notes
     def notes_as_html
         notes
     end
 
     def notes_without_html
-        # assume notes are reasonably behaved HTML, so just use simple regexp on this
-        @notes_without_html ||= (self.notes.nil? ? '' : self.notes.gsub(/<\/?[^>]*>/, ""))
+        # assume notes are reasonably behaved HTML, so just use simple regexp
+        # on this
+        @notes_without_html ||= (notes.nil? ? '' : notes.gsub(/<\/?[^>]*>/, ""))
     end
 
     def json_for_api
@@ -717,6 +728,8 @@ class PublicBody < ActiveRecord::Base
         end
     end
 
+    # TODO: This could be removed by updating the default value (to '') of the 
+    # `publication_scheme` column in the `public_body_translations` table.
     def set_default_publication_scheme
       warn %q([DEPRECATION] PublicBody#set_default_publication_scheme will
       become a private method in 0.23).squish
