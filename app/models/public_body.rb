@@ -211,11 +211,12 @@ class PublicBody < ActiveRecord::Base
 
     # If tagged "not_apply", then FOI/EIR no longer applies to authority at all
     def not_apply?
-        return self.has_tag?('not_apply')
+        has_tag?('not_apply')
     end
+
     # If tagged "defunct", then the authority no longer exists at all
     def defunct?
-        return self.has_tag?('defunct')
+        has_tag?('defunct')
     end
 
     # Can an FOI (etc.) request be made to this body?
@@ -234,37 +235,37 @@ class PublicBody < ActiveRecord::Base
 
     # Also used as not_followable_reason
     def not_requestable_reason
-        if self.defunct?
-            return 'defunct'
-        elsif self.not_apply?
-            return 'not_apply'
+        if defunct?
+            'defunct'
+        elsif not_apply?
+            'not_apply'
         elsif !has_request_email?
-            return 'bad_contact'
+            'bad_contact'
         else
             raise "not_requestable_reason called with type that has no reason"
         end
     end
 
     def special_not_requestable_reason?
-        self.defunct? || self.not_apply?
+        defunct? || not_apply?
     end
 
     def created_at_numeric
         # format it here as no datetime support in Xapian's value ranges
-        return self.created_at.strftime("%Y%m%d%H%M%S")
+        created_at.strftime("%Y%m%d%H%M%S")
     end
+
     def variety
-        return "authority"
+        "authority"
     end
 
     # if the URL name has changed, then all requested_from: queries
     # will break unless we update index for every event for every
     # request linked to it
     def reindex_requested_from
-        if self.changes.include?('url_name')
-            for info_request in self.info_requests
-
-                for info_request_event in info_request.info_request_events
+        if changes.include?('url_name')
+            info_requests.each do |info_request|
+                info_request.info_request_events.each do |info_request_event|
                     info_request_event.xapian_mark_needs_index
                 end
             end
@@ -275,25 +276,26 @@ class PublicBody < ActiveRecord::Base
     def short_name=(short_name)
         globalize.write(Globalize.locale, :short_name, short_name)
         self[:short_name] = short_name
-        self.update_url_name
+        update_url_name
     end
 
     def name=(name)
         globalize.write(Globalize.locale, :name, name)
         self[:name] = name
-        self.update_url_name
+        update_url_name
     end
 
     def update_url_name
-        self.url_name = MySociety::Format.simplify_url_part(self.short_or_long_name, 'body')
+        self.url_name = MySociety::Format.simplify_url_part(short_or_long_name, 'body')
     end
 
     # Return the short name if present, or else long name
     def short_or_long_name
-        if self.short_name.nil? || self.short_name.empty?   # 'nil' can happen during construction
-            self.name.nil? ? "" : self.name
+        # 'nil' can happen during construction
+        if short_name.nil? || short_name.empty?
+            name.nil? ? "" : name
         else
-            self.short_name
+            short_name
         end
     end
 
@@ -529,16 +531,14 @@ class PublicBody < ActiveRecord::Base
     # Does this user have the power of FOI officer for this body?
     def is_foi_officer?(user)
         user_domain = user.email_domain
-        our_domain = self.request_email_domain
+        our_domain = request_email_domain
 
-        if user_domain.nil? or our_domain.nil?
-            return false
-        end
-
-        return our_domain == user_domain
+        return false if user_domain.nil? or our_domain.nil?
+        our_domain == user_domain
     end
+
     def foi_officer_domain_required
-        return self.request_email_domain
+        request_email_domain
     end
 
     def request_email
@@ -551,7 +551,7 @@ class PublicBody < ActiveRecord::Base
 
     # Domain name of the request email
     def request_email_domain
-        return PublicBody.extract_domain_from_email(self.request_email)
+        PublicBody.extract_domain_from_email(request_email)
     end
 
     # Return the domain part of an email address, canonicalised and with common
@@ -574,17 +574,19 @@ class PublicBody < ActiveRecord::Base
     end
 
     def reverse_sorted_versions
-        self.versions.sort { |a,b| b.version <=> a.version }
+        versions.sort { |a,b| b.version <=> a.version }
     end
+
     def sorted_versions
-        self.versions.sort { |a,b| a.version <=> b.version }
+        versions.sort { |a,b| a.version <=> b.version }
     end
 
     def has_notes?
-        return !self.notes.nil? && self.notes != ""
+        !notes.nil? && notes != ""
     end
+
     def notes_as_html
-        self.notes
+        notes
     end
 
     def notes_without_html
@@ -593,25 +595,27 @@ class PublicBody < ActiveRecord::Base
     end
 
     def json_for_api
-        return {
-            :id => self.id,
-            :url_name => self.url_name,
-            :name => self.name,
-            :short_name => self.short_name,
-            # :request_email  # we hide this behind a captcha, to stop people doing bulk requests easily
-            :created_at => self.created_at,
-            :updated_at => self.updated_at,
-            # don't add the history as some edit comments contain sensitive information
+        {
+            :id => id,
+            :url_name => url_name,
+            :name => name,
+            :short_name => short_name,
+            # :request_email  # we hide this behind a captcha, to stop people
+            # doing bulk requests easily
+            :created_at => created_at,
+            :updated_at => updated_at,
+            # don't add the history as some edit comments contain sensitive
+            # information
             # :version, :last_edit_editor, :last_edit_comment
-            :home_page => self.calculated_home_page,
-            :notes => self.notes,
-            :publication_scheme => self.publication_scheme,
-            :tags => self.tag_array,
+            :home_page => calculated_home_page,
+            :notes => notes,
+            :publication_scheme => publication_scheme,
+            :tags => tag_array,
         }
     end
 
     def purge_in_cache
-        self.info_requests.each {|x| x.purge_in_cache}
+        info_requests.each { |x| x.purge_in_cache }
     end
 
     def self.where_clause_for_stats(minimum_requests, total_column)
@@ -684,6 +688,7 @@ class PublicBody < ActiveRecord::Base
             'y_max' => 100,
             'totals' => original_totals}
     end
+
     def self.popular_bodies(locale)
         # get some example searches and public bodies to display
         # either from config, or based on a (slow!) query if not set
