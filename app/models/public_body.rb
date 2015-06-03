@@ -710,6 +710,9 @@ class PublicBody < ActiveRecord::Base
         return bodies
     end
 
+    # Methods to privatise
+    # --------------------------------------------------------------------------
+
     # Set the first letter, which is used for faster queries
     def set_first_letter
         warn %q([DEPRECATION] PublicBody#set_first_letter will become a private
@@ -732,6 +735,9 @@ class PublicBody < ActiveRecord::Base
       # translated attribute)
       self.publication_scheme = "" if publication_scheme.nil?
     end
+
+    # Methods to remove
+    # --------------------------------------------------------------------------
 
     # Set the first letter on a public body or translation
     def self.set_first_letter(instance)
