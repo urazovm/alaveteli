@@ -46,17 +46,18 @@ class CensorRule < ActiveRecord::Base
 
     def apply_to_text(text_to_censor)
         return nil if text_to_censor.nil?
-        text_to_censor.gsub(to_replace, replacement)
+        text_to_censor.gsub(to_replace(encoding(text_to_censor)), replacement)
     end
 
     def apply_to_text!(text_to_censor)
         return nil if text_to_censor.nil?
-        text_to_censor.gsub!(to_replace, replacement)
+        text_to_censor.gsub!(to_replace(encoding(text_to_censor)), replacement)
     end
 
     def apply_to_binary!(binary_to_censor)
         return nil if binary_to_censor.nil?
-        binary_to_censor.gsub!(to_replace) { |match| match.gsub(/./, 'x') }
+        encoding = String.method_defined?(:encode) ? binary_to_censor.encoding : nil
+        binary_to_censor.gsub!(to_replace(encoding)) { |match| match.gsub(/./, 'x') }
     end
 
     def is_global?
@@ -75,18 +76,28 @@ class CensorRule < ActiveRecord::Base
 
     def require_valid_regexp
         begin
-            make_regexp
+            make_regexp('UTF-8')
         rescue RegexpError => e
             errors.add(:text, e.message)
         end
     end
 
-    def make_regexp
-        Regexp.new(text, Regexp::MULTILINE)
+    def to_replace(encoding)
+        regexp? ? make_regexp(encoding) : encoded_text(encoding)
     end
 
-    def to_replace
-        regexp? ? make_regexp : text
+    private
+
+    def encoding(text)
+        String.method_defined?(:encode) ? text.encoding : nil
+    end
+
+    def encoded_text(encoding)
+        String.method_defined?(:encode) ? text.dup.force_encoding(encoding) : text
+    end
+
+    def make_regexp(encoding)
+        Regexp.new(encoded_text(encoding), Regexp::MULTILINE)
     end
 
 end
