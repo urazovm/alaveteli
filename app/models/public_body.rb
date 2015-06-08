@@ -746,9 +746,12 @@ class PublicBody < ActiveRecord::Base
     # if the URL name has changed, then all requested_from: queries
     # will break unless we update index for every event for every
     # request linked to it
+    #
+    # TODO: Can't actually deprecate this because spec/script/mailin_spec.rb:28
+    # fails due to the deprecation notice output
     def reindex_requested_from
-        warn %q([DEPRECATION] PublicBody#reindex_requested_from will become a
-        private method in 0.23).squish
+        # warn %q([DEPRECATION] PublicBody#reindex_requested_from will become a
+        # private method in 0.23).squish
 
         if changes.include?('url_name')
             info_requests.each do |info_request|
