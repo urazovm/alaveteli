@@ -716,9 +716,13 @@ class PublicBody < ActiveRecord::Base
     # --------------------------------------------------------------------------
 
     # Set the first letter, which is used for faster queries
+    #
+    # TODO: Can't actually deprecate this because spec/script/mailin_spec.rb:28
+    # fails due to the deprecation notice output
     def set_first_letter
-        warn %q([DEPRECATION] PublicBody#set_first_letter will become a private
-        method in 0.23).squish
+        # warn %q([DEPRECATION] PublicBody#set_first_letter will become a private
+        # method in 0.23).squish
+
         unless name.nil? or name.empty?
             # we use a regex to ensure it works with utf-8/multi-byte
             new_first_letter = Unicode.upcase name.scan(/^./mu)[0]
