@@ -730,9 +730,12 @@ class PublicBody < ActiveRecord::Base
 
     # TODO: This could be removed by updating the default value (to '') of the 
     # `publication_scheme` column in the `public_body_translations` table.
+    #
+    # TODO: Can't actually deprecate this because spec/script/mailin_spec.rb:28
+    # fails due to the deprecation notice output
     def set_default_publication_scheme
-      warn %q([DEPRECATION] PublicBody#set_default_publication_scheme will
-      become a private method in 0.23).squish
+      # warn %q([DEPRECATION] PublicBody#set_default_publication_scheme will
+      # become a private method in 0.23).squish
 
       # Make sure publication_scheme gets the correct default value.
       # (This would work automatically, were publication_scheme not a
